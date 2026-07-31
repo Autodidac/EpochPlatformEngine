@@ -18,6 +18,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EpochPlatformExampleStatic"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EpochPlatformExampleShared", "EpochPlatformExampleShared.vcxproj", "{54E47069-B9E2-4690-AA82-AE635364D871}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EpochPlatformReleaseExampleStatic", "EpochPlatformReleaseExampleStatic.vcxproj", "{A2CEB71B-90F4-4A18-BA09-6E5822CE1D61}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EpochPlatformReleaseExampleShared", "EpochPlatformReleaseExampleShared.vcxproj", "{C8F6D155-285B-4AA5-8E23-B6DAB7FBDF2A}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EpochPlatformEngineTests", "EpochPlatformEngineTests.vcxproj", "{9BC2C540-4869-4666-AE08-BB8E7E8FFF62}"
 EndProject
 Global
@@ -58,6 +62,14 @@ Global
 		{54E47069-B9E2-4690-AA82-AE635364D871}.Debug|x64.Build.0 = Debug|x64
 		{54E47069-B9E2-4690-AA82-AE635364D871}.Release|x64.ActiveCfg = Release|x64
 		{54E47069-B9E2-4690-AA82-AE635364D871}.Release|x64.Build.0 = Release|x64
+		{A2CEB71B-90F4-4A18-BA09-6E5822CE1D61}.Debug|x64.ActiveCfg = Debug|x64
+		{A2CEB71B-90F4-4A18-BA09-6E5822CE1D61}.Debug|x64.Build.0 = Debug|x64
+		{A2CEB71B-90F4-4A18-BA09-6E5822CE1D61}.Release|x64.ActiveCfg = Release|x64
+		{A2CEB71B-90F4-4A18-BA09-6E5822CE1D61}.Release|x64.Build.0 = Release|x64
+		{C8F6D155-285B-4AA5-8E23-B6DAB7FBDF2A}.Debug|x64.ActiveCfg = Debug|x64
+		{C8F6D155-285B-4AA5-8E23-B6DAB7FBDF2A}.Debug|x64.Build.0 = Debug|x64
+		{C8F6D155-285B-4AA5-8E23-B6DAB7FBDF2A}.Release|x64.ActiveCfg = Release|x64
+		{C8F6D155-285B-4AA5-8E23-B6DAB7FBDF2A}.Release|x64.Build.0 = Release|x64
 		{9BC2C540-4869-4666-AE08-BB8E7E8FFF62}.Debug|x64.ActiveCfg = Debug|x64
 		{9BC2C540-4869-4666-AE08-BB8E7E8FFF62}.Debug|x64.Build.0 = Debug|x64
 		{9BC2C540-4869-4666-AE08-BB8E7E8FFF62}.Release|x64.ActiveCfg = Release|x64
