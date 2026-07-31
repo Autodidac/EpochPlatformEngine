@@ -29,7 +29,7 @@ namespace
     }
 }
 
-int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int show_command)
+int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int show_command)
 {
     int wide_count{};
     wchar_t** wide_arguments = CommandLineToArgvW(GetCommandLineW(), &wide_count);
