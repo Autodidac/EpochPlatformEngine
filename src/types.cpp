@@ -17,7 +17,12 @@ namespace epochengine::platform
             };
         case RuntimePlatform::Linux:
         {
-            const bool display_available = std::getenv("DISPLAY") != nullptr;
+#if defined(__linux__)
+            const char* const display = std::getenv("DISPLAY");
+            const bool display_available = display != nullptr && *display != '\0';
+#else
+            constexpr bool display_available = false;
+#endif
             return {
                 .platform = RuntimePlatform::Linux,
 #if defined(EPOCH_PLATFORM_HAS_X11)
