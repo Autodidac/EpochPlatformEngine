@@ -1,35 +1,20 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
+/out/
+/build/
+.cache/
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+*.pdb
+*.ilk
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
+*.o
 *.a
 *.lib
-
-# Executables
+*.dll
+*.so
+*.so.*
+*.dylib
 *.exe
-*.out
-*.app
-
-x64/*
-.vs/*
+compile_commands.json

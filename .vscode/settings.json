@@ -1,0 +1,11 @@
+{
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": false,
+  "cmake.defaultConfigurePreset": "ninja-debug",
+  "cmake.defaultBuildPreset": "ninja-debug",
+  "C_Cpp.default.cppStandard": "c++23",
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/out/build/ninja-debug/compile_commands.json",
+  "files.associations": {
+    "*.mm": "objective-cpp"
+  }
+}

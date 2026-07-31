@@ -1,0 +1,43 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "EpochPlatformEngine Example (CMake)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/out/build/ninja-debug/EpochPlatformExampleStatic",
+      "cwd": "${workspaceFolder}/out/build/ninja-debug",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "EpochPlatformEngine: CMake build Debug",
+      "windows": {
+        "type": "cppvsdbg",
+        "program": "${workspaceFolder}\\out\\build\\ninja-debug\\EpochPlatformExampleStatic.exe",
+        "cwd": "${workspaceFolder}\\out\\build\\ninja-debug"
+      },
+      "osx": {
+        "MIMode": "lldb"
+      }
+    },
+    {
+      "name": "EpochPlatformEngine Tests (CMake)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/out/build/ninja-debug/EpochPlatformEngineTests",
+      "cwd": "${workspaceFolder}/out/build/ninja-debug",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "EpochPlatformEngine: CMake build Debug",
+      "windows": {
+        "type": "cppvsdbg",
+        "program": "${workspaceFolder}\\out\\build\\ninja-debug\\EpochPlatformEngineTests.exe",
+        "cwd": "${workspaceFolder}\\out\\build\\ninja-debug"
+      },
+      "osx": {
+        "MIMode": "lldb"
+      }
+    }
+  ]
+}
