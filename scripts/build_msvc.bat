@@ -63,19 +63,19 @@ if /I "%CONFIG%"=="Debug" (
 
 set "SOURCES=application runtime runtime_host types"
 
-echo [1/7] Static library
+echo [1/9] Static library
 for %%S in (%SOURCES%) do cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\src\%%S.cpp" /Fo"%OBJS%\%%S.obj" || exit /b 1
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\src\drivers\headless_driver.cpp" /Fo"%OBJS%\headless_driver.obj" || exit /b 1
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\src\drivers\win32_driver.cpp" /Fo"%OBJS%\win32_driver.obj" || exit /b 1
 lib /nologo /OUT:"%OUT%\EpochPlatformEngineStatic.lib" "%OBJS%\application.obj" "%OBJS%\runtime.obj" "%OBJS%\runtime_host.obj" "%OBJS%\types.obj" "%OBJS%\headless_driver.obj" "%OBJS%\win32_driver.obj" || exit /b 1
 
-echo [2/7] Shared library
+echo [2/9] Shared library
 for %%S in (%SOURCES%) do cl %COMMON% /DEPOCH_PLATFORM_ENGINE_EXPORTS=1 /c "%ROOT%\src\%%S.cpp" /Fo"%OBJD%\%%S.obj" || exit /b 1
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_EXPORTS=1 /c "%ROOT%\src\drivers\headless_driver.cpp" /Fo"%OBJD%\headless_driver.obj" || exit /b 1
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_EXPORTS=1 /c "%ROOT%\src\drivers\win32_driver.cpp" /Fo"%OBJD%\win32_driver.obj" || exit /b 1
 link /nologo /DLL /OUT:"%OUT%\EpochPlatformEngine.dll" /IMPLIB:"%OUT%\EpochPlatformEngine.lib" /PDB:"%OUT%\EpochPlatformEngine.pdb" "%OBJD%\application.obj" "%OBJD%\runtime.obj" "%OBJD%\runtime_host.obj" "%OBJD%\types.obj" "%OBJD%\headless_driver.obj" "%OBJD%\win32_driver.obj" user32.lib shell32.lib || exit /b 1
 
-echo [3/7] Internal entrypoint archives
+echo [3/9] Internal entrypoint archives
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\src\entrypoint\entrypoint.cpp" /Fo"%OBJS%\entrypoint.obj" || exit /b 1
 lib /nologo /OUT:"%OUT%\EpochPlatformEntrypointConsoleStatic.lib" "%OBJS%\entrypoint.obj" || exit /b 1
 cl %COMMON% /c "%ROOT%\src\entrypoint\entrypoint.cpp" /Fo"%OBJD%\entrypoint.obj" || exit /b 1
@@ -85,19 +85,27 @@ lib /nologo /OUT:"%OUT%\EpochPlatformEntrypointWindowedStatic.lib" "%OBJS%\entry
 cl %COMMON% /DEPOCH_PLATFORM_WINDOWED_ENTRYPOINT=1 /c "%ROOT%\src\entrypoint\entrypoint.cpp" /Fo"%OBJD%\entrypoint_windowed.obj" || exit /b 1
 lib /nologo /OUT:"%OUT%\EpochPlatformEntrypointWindowedShared.lib" "%OBJD%\entrypoint_windowed.obj" || exit /b 1
 
-echo [4/7] Static internal-entrypoint example
+echo [4/9] Static validation example
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\examples\basic_app.cpp" /Fo"%OBJS%\basic_app.obj" || exit /b 1
 link /nologo /SUBSYSTEM:CONSOLE /OUT:"%OUT%\EpochPlatformExampleStatic.exe" "%OBJS%\basic_app.obj" "%OUT%\EpochPlatformEntrypointConsoleStatic.lib" "%OUT%\EpochPlatformEngineStatic.lib" user32.lib shell32.lib || exit /b 1
 
-echo [5/7] Shared internal-entrypoint example
+echo [5/9] Shared validation example
 cl %COMMON% /c "%ROOT%\examples\basic_app.cpp" /Fo"%OBJD%\basic_app.obj" || exit /b 1
 link /nologo /SUBSYSTEM:CONSOLE /OUT:"%OUT%\EpochPlatformExampleShared.exe" "%OBJD%\basic_app.obj" "%OUT%\EpochPlatformEntrypointConsoleShared.lib" "%OUT%\EpochPlatformEngine.lib" user32.lib shell32.lib || exit /b 1
 
-echo [6/7] Tests
+echo [6/9] Static release example
+cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\examples\release_app.cpp" /Fo"%OBJS%\release_app.obj" || exit /b 1
+link /nologo /SUBSYSTEM:WINDOWS /OUT:"%OUT%\EpochPlatformReleaseExampleStatic.exe" "%OBJS%\release_app.obj" "%OUT%\EpochPlatformEntrypointWindowedStatic.lib" "%OUT%\EpochPlatformEngineStatic.lib" user32.lib shell32.lib || exit /b 1
+
+echo [7/9] Shared release example
+cl %COMMON% /c "%ROOT%\examples\release_app.cpp" /Fo"%OBJD%\release_app.obj" || exit /b 1
+link /nologo /SUBSYSTEM:WINDOWS /OUT:"%OUT%\EpochPlatformReleaseExampleShared.exe" "%OBJD%\release_app.obj" "%OUT%\EpochPlatformEntrypointWindowedShared.lib" "%OUT%\EpochPlatformEngine.lib" user32.lib shell32.lib || exit /b 1
+
+echo [8/9] Tests
 cl %COMMON% /DEPOCH_PLATFORM_ENGINE_STATIC=1 /c "%ROOT%\tests\platform_tests.cpp" /Fo"%OBJS%\platform_tests.obj" || exit /b 1
 link /nologo /SUBSYSTEM:CONSOLE /OUT:"%OUT%\EpochPlatformEngineTests.exe" "%OBJS%\platform_tests.obj" "%OUT%\EpochPlatformEngineStatic.lib" user32.lib shell32.lib || exit /b 1
 
-echo [7/7] Validation
+echo [9/9] Validation
 "%OUT%\EpochPlatformEngineTests.exe" || exit /b 1
 "%OUT%\EpochPlatformExampleStatic.exe" || exit /b 1
 "%OUT%\EpochPlatformExampleShared.exe" || exit /b 1
