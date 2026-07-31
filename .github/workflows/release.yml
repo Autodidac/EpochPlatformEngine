@@ -53,7 +53,8 @@ jobs:
           set -euo pipefail
           version="$(tr -d '\r\n ' < RELEASE_VERSION)"
           name="EpochPlatformEngine-v${version}-linux-x64"
-          root="dist/${name}"
+          dist="${GITHUB_WORKSPACE}/dist"
+          root="${dist}/${name}"
 
           mkdir -p "${root}/bin" "${root}/sdk" "${root}/source"
           cmake --install out/release --prefix "${root}/sdk"
@@ -82,7 +83,7 @@ jobs:
           SCRIPT
 
           chmod +x "${root}/run-static.sh" "${root}/run-shared.sh"
-          tar -C dist -czf "dist/${name}.tar.gz" "${name}"
+          tar -C "${dist}" -czf "${dist}/${name}.tar.gz" "${name}"
 
       - name: Upload Linux package
         uses: actions/upload-artifact@v4
@@ -121,7 +122,9 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $version = (Get-Content RELEASE_VERSION -Raw).Trim()
           $name = "EpochPlatformEngine-v$version-windows-x64"
-          $root = Join-Path 'dist' $name
+          $workspace = (Resolve-Path '.').Path
+          $dist = Join-Path $workspace 'dist'
+          $root = Join-Path $dist $name
           $bin = Join-Path $root 'bin'
           $sdk = Join-Path $root 'sdk'
           $source = Join-Path $root 'source'
@@ -156,7 +159,7 @@ jobs:
           exit /b %result%
           '@ | Set-Content -Encoding ascii (Join-Path $root 'run-shared.cmd')
 
-          Compress-Archive -Path "$root/*" -DestinationPath "dist/$name.zip" -CompressionLevel Optimal
+          Compress-Archive -Path "$root/*" -DestinationPath (Join-Path $dist "$name.zip") -CompressionLevel Optimal
 
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
@@ -213,3 +216,48 @@ jobs:
               --notes-file docs/release-notes.md
           fi
           gh release upload "${RELEASE_TAG}" dist/* --clobber
+
+  report:
+    name: Record release result
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    needs:
+      - linux-x64
+      - windows-x64
+      - publish
+
+    steps:
+      - name: Write status marker
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LINUX_RESULT: ${{ needs.linux-x64.result }}
+          WINDOWS_RESULT: ${{ needs.windows-x64.result }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(printf 'run=%s\nsha=%s\nlinux=%s\nwindows=%s\npublish=%s\n' \
+            "${GITHUB_RUN_ID}" \
+            "${GITHUB_SHA}" \
+            "${LINUX_RESULT}" \
+            "${WINDOWS_RESULT}" \
+            "${PUBLISH_RESULT}")"
+          content="$(printf '%s' "${status}" | base64 -w0)"
+          current_sha="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/contents/RELEASE_WORKFLOW_STATUS?ref=main" \
+            --jq '.sha' 2>/dev/null || true)"
+
+          if [[ -n "${current_sha}" ]]; then
+            gh api --method PUT \
+              "repos/${GITHUB_REPOSITORY}/contents/RELEASE_WORKFLOW_STATUS" \
+              -f message="Record EpochPlatformEngine release result" \
+              -f content="${content}" \
+              -f sha="${current_sha}" \
+              -f branch="main"
+          else
+            gh api --method PUT \
+              "repos/${GITHUB_REPOSITORY}/contents/RELEASE_WORKFLOW_STATUS" \
+              -f message="Record EpochPlatformEngine release result" \
+              -f content="${content}" \
+              -f branch="main"
+          fi
