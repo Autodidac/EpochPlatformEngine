@@ -1,0 +1,29 @@
+name: EpochPlatformEngine Actions Probe
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ACTIONS_PROBE_TRIGGER"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write probe marker
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          content="$(printf '%s\n' "GitHub Actions ran for ${GITHUB_SHA}" | base64 -w0)"
+          gh api --method PUT \
+            "repos/${GITHUB_REPOSITORY}/contents/ACTIONS_PROBE_SUCCESS" \
+            -f message="Confirm GitHub Actions execution" \
+            -f content="${content}" \
+            -f branch="main"
