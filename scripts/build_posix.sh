@@ -67,27 +67,27 @@ compile_set() {
   done
 }
 
-echo "[1/7] Static library"
+echo "[1/9] Static library"
 compile_set "$OBJ_STATIC" -DEPOCH_PLATFORM_ENGINE_STATIC=1
 ar rcs "$OUT/libEpochPlatformEngineStatic.a" "$OBJ_STATIC"/*.o
 
-echo "[2/7] Shared library"
+echo "[2/9] Shared library"
 compile_set "$OBJ_SHARED" -DEPOCH_PLATFORM_ENGINE_EXPORTS=1 -fvisibility=hidden -fvisibility-inlines-hidden
 "$CXX" "${SHARED_LINK[@]}" -o "$OUT/libEpochPlatformEngine.$SHARED_EXT" "$OBJ_SHARED"/*.o "${PLATFORM_LIBS[@]}" -pthread
 
-echo "[3/7] Internal entrypoint archives"
+echo "[3/9] Internal entrypoint archives"
 "$CXX" "${COMMON[@]}" -DEPOCH_PLATFORM_ENGINE_STATIC=1 -c "$ROOT/src/entrypoint/entrypoint.cpp" -o "$OBJ_STATIC/entrypoint.o"
 ar rcs "$OUT/libEpochPlatformEntrypointConsoleStatic.a" "$OBJ_STATIC/entrypoint.o"
 "$CXX" "${COMMON[@]}" -c "$ROOT/src/entrypoint/entrypoint.cpp" -o "$OBJ_SHARED/entrypoint.o"
 ar rcs "$OUT/libEpochPlatformEntrypointConsoleShared.a" "$OBJ_SHARED/entrypoint.o"
 
-echo "[4/7] Static internal-entrypoint example"
+echo "[4/9] Static validation example"
 "$CXX" "${COMMON[@]}" -DEPOCH_PLATFORM_ENGINE_STATIC=1 -c "$ROOT/examples/basic_app.cpp" -o "$OBJ_STATIC/basic_app.o"
 "$CXX" -o "$OUT/EpochPlatformExampleStatic" "$OBJ_STATIC/basic_app.o" \
   "$OUT/libEpochPlatformEntrypointConsoleStatic.a" "$OUT/libEpochPlatformEngineStatic.a" \
   "${PLATFORM_LIBS[@]}" -pthread
 
-echo "[5/7] Shared internal-entrypoint example"
+echo "[5/9] Shared validation example"
 "$CXX" "${COMMON[@]}" -c "$ROOT/examples/basic_app.cpp" -o "$OBJ_SHARED/basic_app.o"
 if [[ "$UNAME" == "Darwin" ]]; then
   "$CXX" -o "$OUT/EpochPlatformExampleShared" "$OBJ_SHARED/basic_app.o" \
@@ -99,12 +99,30 @@ else
     -Wl,-rpath,'$ORIGIN' "${PLATFORM_LIBS[@]}" -pthread
 fi
 
-echo "[6/7] Tests"
+echo "[6/9] Static release example"
+"$CXX" "${COMMON[@]}" -DEPOCH_PLATFORM_ENGINE_STATIC=1 -c "$ROOT/examples/release_app.cpp" -o "$OBJ_STATIC/release_app.o"
+"$CXX" -o "$OUT/EpochPlatformReleaseExampleStatic" "$OBJ_STATIC/release_app.o" \
+  "$OUT/libEpochPlatformEntrypointConsoleStatic.a" "$OUT/libEpochPlatformEngineStatic.a" \
+  "${PLATFORM_LIBS[@]}" -pthread
+
+echo "[7/9] Shared release example"
+"$CXX" "${COMMON[@]}" -c "$ROOT/examples/release_app.cpp" -o "$OBJ_SHARED/release_app.o"
+if [[ "$UNAME" == "Darwin" ]]; then
+  "$CXX" -o "$OUT/EpochPlatformReleaseExampleShared" "$OBJ_SHARED/release_app.o" \
+    "$OUT/libEpochPlatformEntrypointConsoleShared.a" -L"$OUT" -lEpochPlatformEngine \
+    -Wl,-rpath,@loader_path "${PLATFORM_LIBS[@]}" -pthread
+else
+  "$CXX" -o "$OUT/EpochPlatformReleaseExampleShared" "$OBJ_SHARED/release_app.o" \
+    "$OUT/libEpochPlatformEntrypointConsoleShared.a" -L"$OUT" -lEpochPlatformEngine \
+    -Wl,-rpath,'$ORIGIN' "${PLATFORM_LIBS[@]}" -pthread
+fi
+
+echo "[8/9] Tests"
 "$CXX" "${COMMON[@]}" -DEPOCH_PLATFORM_ENGINE_STATIC=1 -c "$ROOT/tests/platform_tests.cpp" -o "$OBJ_STATIC/platform_tests.o"
 "$CXX" -o "$OUT/EpochPlatformEngineTests" "$OBJ_STATIC/platform_tests.o" \
   "$OUT/libEpochPlatformEngineStatic.a" "${PLATFORM_LIBS[@]}" -pthread
 
-echo "[7/7] Validation"
+echo "[9/9] Validation"
 if [[ "$RUN" != "no-run" ]]; then
   "$OUT/EpochPlatformEngineTests"
   "$OUT/EpochPlatformExampleStatic"
