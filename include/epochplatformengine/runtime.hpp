@@ -55,6 +55,11 @@ namespace epochengine::platform
         void* native_application_instance{};
     };
 
+#if defined(_MSC_VER) && !defined(EPOCH_PLATFORM_ENGINE_STATIC)
+#    pragma warning(push)
+#    pragma warning(disable : 4251)
+#endif
+
     class EPOCH_PLATFORM_API Runtime final
     {
     public:
@@ -96,6 +101,10 @@ namespace epochengine::platform
         struct Impl;
         std::unique_ptr<Impl> impl_;
     };
+
+#if defined(_MSC_VER) && !defined(EPOCH_PLATFORM_ENGINE_STATIC)
+#    pragma warning(pop)
+#endif
 
     [[nodiscard]] EPOCH_PLATFORM_API DriverKind default_driver_kind() noexcept;
 }
