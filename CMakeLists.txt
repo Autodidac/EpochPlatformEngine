@@ -150,11 +150,29 @@ if(EPOCH_PLATFORM_BUILD_EXAMPLES)
         epoch_platform_add_application(EpochPlatformExampleStatic
             LINKAGE STATIC
             SOURCES examples/basic_app.cpp)
+        epoch_platform_add_application(EpochPlatformReleaseExampleStatic
+            WINDOWED
+            LINKAGE STATIC
+            SOURCES examples/release_app.cpp)
     endif()
     if(TARGET EpochPlatformEntrypointConsoleShared)
         epoch_platform_add_application(EpochPlatformExampleShared
             LINKAGE SHARED
             SOURCES examples/basic_app.cpp)
+        epoch_platform_add_application(EpochPlatformReleaseExampleShared
+            WINDOWED
+            LINKAGE SHARED
+            SOURCES examples/release_app.cpp)
+
+        if(APPLE)
+            set_target_properties(EpochPlatformReleaseExampleShared PROPERTIES
+                BUILD_RPATH "@loader_path"
+                INSTALL_RPATH "@loader_path")
+        elseif(UNIX)
+            set_target_properties(EpochPlatformReleaseExampleShared PROPERTIES
+                BUILD_RPATH "$ORIGIN"
+                INSTALL_RPATH "$ORIGIN")
+        endif()
     endif()
 endif()
 
