@@ -27,11 +27,46 @@
       "problemMatcher": []
     },
     {
+      "label": "EpochPlatformEngine: CMake configure Release",
+      "type": "process",
+      "command": "cmake",
+      "args": ["--preset", "ninja-release"],
+      "problemMatcher": []
+    },
+    {
+      "label": "EpochPlatformEngine: CMake build Release",
+      "type": "process",
+      "command": "cmake",
+      "args": ["--build", "--preset", "ninja-release"],
+      "dependsOn": "EpochPlatformEngine: CMake configure Release",
+      "group": "build",
+      "problemMatcher": ["$gcc", "$msCompile"]
+    },
+    {
+      "label": "EpochPlatformEngine: CMake test Release",
+      "type": "process",
+      "command": "ctest",
+      "args": ["--preset", "ninja-release"],
+      "dependsOn": "EpochPlatformEngine: CMake build Release",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
       "label": "EpochPlatformEngine: direct native build",
       "type": "shell",
       "command": "${workspaceFolder}/build.sh gcc Debug",
       "windows": {
         "command": "cmd /d /c \"${workspaceFolder}\\build.bat\" Debug"
+      },
+      "group": "build",
+      "problemMatcher": ["$gcc", "$msCompile"]
+    },
+    {
+      "label": "EpochPlatformEngine: direct native Release",
+      "type": "shell",
+      "command": "${workspaceFolder}/build.sh gcc Release",
+      "windows": {
+        "command": "cmd /d /c \"${workspaceFolder}\\build.bat\" Release"
       },
       "group": "build",
       "problemMatcher": ["$gcc", "$msCompile"]
