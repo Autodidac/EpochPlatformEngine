@@ -54,7 +54,7 @@ if not exist "%OBJS%" mkdir "%OBJS%"
 if not exist "%OBJD%" mkdir "%OBJD%"
 del /q "%OBJS%\*.obj" "%OBJD%\*.obj" "%OUT%\*.lib" "%OUT%\*.dll" "%OUT%\*.exe" "%OUT%\*.pdb" 2>nul
 
-set "COMMON=/nologo /std:c++latest /EHsc /W4 /permissive- /Zc:__cplusplus /I"%ROOT%\include" /D_WIN32_WINNT=0x0A00 /DWINVER=0x0A00 /DWIN32_LEAN_AND_MEAN /DNOMINMAX"
+set "COMMON=/nologo /std:c++latest /EHsc /W4 /permissive- /Zc:__cplusplus /I"%ROOT%\include" /DUNICODE /D_UNICODE /D_WIN32_WINNT=0x0A00 /DWINVER=0x0A00 /DWIN32_LEAN_AND_MEAN /DNOMINMAX"
 if /I "%CONFIG%"=="Debug" (
   set "COMMON=%COMMON% /Od /Zi /MDd"
 ) else (
