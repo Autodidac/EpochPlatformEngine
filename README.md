@@ -1,8 +1,8 @@
 # EpochPlatformEngine
 
-`EpochPlatformEngine` is the reusable C++23 process, window, event, and multi-context host for EpochEngine applications and standalone Epoch projects.
+`EpochPlatformEngine` is the reusable C++23 process, window, event, and multi-context host for EpochEngine applications and standalone tools.
 
-It deliberately does **not** own rendering. OpenGL, Vulkan, DirectX, SDL, SFML, Raylib, software rendering, and future renderer implementations stay in their own engine drivers. `EpochPlatformEngine` owns the native operating-system boundary those drivers attach to.
+It deliberately does **not** own rendering. OpenGL, Vulkan, DirectX, SDL, SFML, Raylib, software rendering, and future renderer implementations remain in their own EpochEngine drivers. `EpochPlatformEngine` owns the native operating-system boundary those drivers attach to.
 
 ## Current capabilities
 
@@ -19,12 +19,14 @@ It deliberately does **not** own rendering. OpenGL, Vulkan, DirectX, SDL, SFML, 
 - Parent, child, detached, resize, visibility, title, and close operations
 - Built-in headless, Win32, X11, and Cocoa drivers
 - Automatic native-driver selection with headless fallback
+- Runnable static and shared release examples
+- Versioned Windows x64 and Linux x64 release packages
 - CMake presets
 - Native Visual Studio solution independent of CMake
 - Direct GCC, Clang, and MSVC build scripts independent of CMake
-- VS Code build and debug tasks
+- VS Code build, test, and launch configurations
 
-No EpochEngine package-manager registration is included. EpochEngine or the project manager can add this repository as a selected source/project dependency when the platform library is actually required.
+No EpochEngine package-manager registration is included. EpochEngine or the project manager can add this repository as a selected source/project dependency only when the platform library is required.
 
 ## Architecture
 
@@ -42,9 +44,9 @@ Application executable
                     └── Headless driver host thread
 ```
 
-A driver host owns one native event pump and any number of contexts for that operating-system driver. Different drivers can run concurrently. Context callbacks execute on the driver owner thread, which gives renderer code a stable thread-affinity point for native and graphics-context initialization.
+A driver host owns one native event pump and any number of contexts for that operating-system driver. Different drivers can run concurrently. Context callbacks execute on the driver owner thread, giving renderer code a stable thread-affinity point for native and graphics-context initialization.
 
-`ContextType` mirrors EpochEngine's existing backend set:
+`ContextType` mirrors the existing EpochEngine backend set:
 
 - OpenGL
 - SDL
@@ -57,6 +59,33 @@ A driver host owns one native event pump and any number of contexts for that ope
 - Noop
 
 The platform library records the renderer type but does not link renderer SDKs.
+
+## Release example
+
+The release example is a runnable demonstration, not only a source snippet. It opens:
+
+- one primary native window
+- one independent detached tools window
+- one headless worker context on a separate driver host
+
+It demonstrates the automatic internal entrypoint, multi-context ownership, detached-window routing, per-context frame callbacks, live title updates, clean close handling, and static/shared linkage. It remains renderer-neutral so EpochEngine graphics drivers can attach to the published native handles.
+
+Close both visible windows to stop the worker and exit. Pass `--auto-exit` to close all contexts after eight seconds. A display-less system automatically uses the headless driver and exits after the same validation period.
+
+Source:
+
+```text
+examples/release_app.cpp
+```
+
+Targets:
+
+```text
+EpochPlatformReleaseExampleStatic
+EpochPlatformReleaseExampleShared
+```
+
+Release packages include both executables, the shared runtime, the installed SDK, source for the example, documentation, license, and SHA-256 checksums. See [`docs/release-example.md`](docs/release-example.md).
 
 ## Automatic internal entrypoint
 
@@ -191,15 +220,16 @@ build.bat Debug
 build.bat Release
 ```
 
-The scripts build and validate:
+The scripts build:
 
 - static library
 - shared library
-- static entrypoint archive
-- shared entrypoint archive
-- static example
-- shared example
+- static and shared entrypoint archives
+- static and shared validation examples
+- static and shared release examples
 - tests
+
+The noninteractive validation examples and tests run automatically. The release examples are built but left for interactive execution.
 
 ### CMake
 
@@ -234,17 +264,19 @@ Open:
 msvc/EpochPlatformEngine.sln
 ```
 
-This path does not require CMake. It contains separate static, shared, entrypoint, example, and test projects.
+This path does not require CMake. It contains separate static, shared, entrypoint, validation-example, release-example, and test projects.
 
 ### VS Code
 
-Open the repository and run one of these tasks:
+Open the repository and use:
 
 - `EpochPlatformEngine: CMake build Debug`
+- `EpochPlatformEngine: CMake build Release`
 - `EpochPlatformEngine: direct native build`
+- `EpochPlatformEngine: direct native Release`
 - `EpochPlatformEngine: direct Clang build`
 
-The checked-in launch configurations run the static example or test executable.
+The checked-in launch configurations run the release example, validation example, or tests.
 
 ## CMake consumer integration
 
