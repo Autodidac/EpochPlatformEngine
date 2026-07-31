@@ -2,7 +2,26 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "EpochPlatformEngine Example (CMake)",
+      "name": "EpochPlatformEngine Release Example (CMake)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/out/build/ninja-release/EpochPlatformReleaseExampleStatic",
+      "cwd": "${workspaceFolder}/out/build/ninja-release",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "preLaunchTask": "EpochPlatformEngine: CMake build Release",
+      "windows": {
+        "type": "cppvsdbg",
+        "program": "${workspaceFolder}\\out\\build\\ninja-release\\EpochPlatformReleaseExampleStatic.exe",
+        "cwd": "${workspaceFolder}\\out\\build\\ninja-release"
+      },
+      "osx": {
+        "MIMode": "lldb"
+      }
+    },
+    {
+      "name": "EpochPlatformEngine Validation Example (CMake)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/out/build/ninja-debug/EpochPlatformExampleStatic",
