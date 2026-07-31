@@ -1,0 +1,214 @@
+name: EpochPlatformEngine Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    paths:
+      - ".github/workflows/release.yml"
+      - "RELEASE_VERSION"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: epoch-platform-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux-x64:
+    name: Linux x64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libx11-dev
+
+      - name: Configure
+        run: >-
+          cmake -S . -B out/release -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DEPOCH_PLATFORM_BUILD_STATIC=ON
+          -DEPOCH_PLATFORM_BUILD_SHARED=ON
+          -DEPOCH_PLATFORM_BUILD_EXAMPLES=ON
+          -DEPOCH_PLATFORM_BUILD_TESTS=ON
+          -DEPOCH_PLATFORM_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build out/release --parallel
+
+      - name: Test
+        run: ctest --test-dir out/release --output-on-failure
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n ' < RELEASE_VERSION)"
+          name="EpochPlatformEngine-v${version}-linux-x64"
+          root="dist/${name}"
+
+          mkdir -p "${root}/bin" "${root}/sdk" "${root}/source"
+          cmake --install out/release --prefix "${root}/sdk"
+
+          cp out/release/EpochPlatformReleaseExampleStatic "${root}/bin/"
+          cp out/release/EpochPlatformReleaseExampleShared "${root}/bin/"
+          cp -a out/release/libEpochPlatformEngine.so* "${root}/bin/"
+          cp examples/release_app.cpp "${root}/source/"
+          cp README.md "${root}/"
+          cp docs/release-example.md "${root}/RELEASE_EXAMPLE.md"
+          cp docs/release-notes.md "${root}/RELEASE_NOTES.md"
+          cp LICENSE "${root}/"
+
+          cat > "${root}/run-static.sh" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          exec "${root}/bin/EpochPlatformReleaseExampleStatic" "$@"
+          SCRIPT
+
+          cat > "${root}/run-shared.sh" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          exec "${root}/bin/EpochPlatformReleaseExampleShared" "$@"
+          SCRIPT
+
+          chmod +x "${root}/run-static.sh" "${root}/run-shared.sh"
+          tar -C dist -czf "dist/${name}.tar.gz" "${name}"
+
+      - name: Upload Linux package
+        uses: actions/upload-artifact@v4
+        with:
+          name: epoch-platform-release-linux-x64
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  windows-x64:
+    name: Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        shell: pwsh
+        run: >-
+          cmake -S . -B out/release -A x64
+          -DEPOCH_PLATFORM_BUILD_STATIC=ON
+          -DEPOCH_PLATFORM_BUILD_SHARED=ON
+          -DEPOCH_PLATFORM_BUILD_EXAMPLES=ON
+          -DEPOCH_PLATFORM_BUILD_TESTS=ON
+          -DEPOCH_PLATFORM_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build out/release --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir out/release -C Release --output-on-failure
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (Get-Content RELEASE_VERSION -Raw).Trim()
+          $name = "EpochPlatformEngine-v$version-windows-x64"
+          $root = Join-Path 'dist' $name
+          $bin = Join-Path $root 'bin'
+          $sdk = Join-Path $root 'sdk'
+          $source = Join-Path $root 'source'
+
+          New-Item -ItemType Directory -Force -Path $bin, $sdk, $source | Out-Null
+          cmake --install out/release --config Release --prefix $sdk
+
+          Copy-Item out/release/Release/EpochPlatformReleaseExampleStatic.exe $bin
+          Copy-Item out/release/Release/EpochPlatformReleaseExampleShared.exe $bin
+          Copy-Item out/release/Release/EpochPlatformEngine.dll $bin
+          Copy-Item examples/release_app.cpp $source
+          Copy-Item README.md $root
+          Copy-Item docs/release-example.md (Join-Path $root 'RELEASE_EXAMPLE.md')
+          Copy-Item docs/release-notes.md (Join-Path $root 'RELEASE_NOTES.md')
+          Copy-Item LICENSE $root
+
+          @'
+          @echo off
+          pushd "%~dp0bin"
+          EpochPlatformReleaseExampleStatic.exe %*
+          set result=%errorlevel%
+          popd
+          exit /b %result%
+          '@ | Set-Content -Encoding ascii (Join-Path $root 'run-static.cmd')
+
+          @'
+          @echo off
+          pushd "%~dp0bin"
+          EpochPlatformReleaseExampleShared.exe %*
+          set result=%errorlevel%
+          popd
+          exit /b %result%
+          '@ | Set-Content -Encoding ascii (Join-Path $root 'run-shared.cmd')
+
+          Compress-Archive -Path "$root/*" -DestinationPath "dist/$name.zip" -CompressionLevel Optimal
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: epoch-platform-release-windows-x64
+          path: dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    needs:
+      - linux-x64
+      - windows-x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: epoch-platform-release-*
+          path: dist
+          merge-multiple: true
+
+      - name: Create checksums
+        run: |
+          cd dist
+          sha256sum *.tar.gz *.zip > SHA256SUMS.txt
+
+      - name: Resolve release tag
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            tag="v$(tr -d '\r\n ' < RELEASE_VERSION)"
+          fi
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publish assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release create "${RELEASE_TAG}" \
+              --target "${GITHUB_SHA}" \
+              --title "EpochPlatformEngine ${RELEASE_TAG}" \
+              --notes-file docs/release-notes.md
+          fi
+          gh release upload "${RELEASE_TAG}" dist/* --clobber
