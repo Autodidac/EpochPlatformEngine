@@ -173,6 +173,8 @@ namespace epochengine::platform
         ContextId context{};
         std::int32_t x{};
         std::int32_t y{};
+        // For resized events these are client dimensions. For
+        // dpi_changed events they carry horizontal and vertical monitor DPI.
         std::int32_t width{};
         std::int32_t height{};
         std::int32_t key{};
