@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(EpochPlatformEngine
-    VERSION 0.1.0
+    VERSION 0.1.1
     DESCRIPTION "Cross-platform C++23 multi-context platform runtime"
     LANGUAGES CXX)
 

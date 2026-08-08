@@ -1,19 +1,10 @@
-# EpochPlatformEngine v0.1.0
+# EpochPlatformEngine v0.1.1
 
-Initial runnable release of EpochPlatformEngine.
+## DPI contract
 
-## Included
+- The Win32 driver now sizes the initial native window using the system DPI instead of a hard-coded 96 DPI.
+- Every new Win32 context emits an initial `dpi_changed` event before normal frame processing.
+- `dpi_changed` explicitly reports horizontal and vertical DPI in `WindowEvent::width` and `WindowEvent::height`.
+- Existing per-monitor `WM_DPICHANGED` handling and suggested-window repositioning remain intact.
 
-- C++23 static and shared platform libraries
-- automatic console and Windows GUI entrypoint libraries
-- Win32, X11, Cocoa, and headless platform drivers
-- multiple contexts per driver host
-- dedicated platform-driver thread routing
-- primary, detached, child, hidden, and headless context support
-- native handle publication for renderer attachment
-- CMake, native Visual Studio, VS Code, GCC, Clang, and direct MSVC build paths
-- static and shared release-example executables
-- Windows x64 and Linux x64 SDK/example packages
-- SHA-256 checksums
-
-The release example opens a primary window and a detached tools window while a headless worker context runs on a separate driver host. The windows are intentionally renderer-neutral; EpochPlatformEngine provides the native hosting layer that EpochEngine render drivers attach to.
+This allows renderer and GUI libraries to resolve logical font sizes correctly on the first frame, including 125%, 150%, 175%, and 200% Windows scaling.

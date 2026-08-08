@@ -146,7 +146,9 @@ namespace epochengine::platform
                     extended_style |= WS_EX_ACCEPTFILES;
 
                 RECT rectangle{ 0, 0, desc.width, desc.height };
-                AdjustWindowRectExForDpi(&rectangle, style, FALSE, extended_style, 96);
+                const UINT creation_dpi = GetDpiForSystem();
+                AdjustWindowRectExForDpi(
+                    &rectangle, style, FALSE, extended_style, creation_dpi);
                 const int width = rectangle.right - rectangle.left;
                 const int height = rectangle.bottom - rectangle.top;
                 const int x = desc.x >= 0 ? desc.x : CW_USEDEFAULT;
@@ -189,6 +191,14 @@ namespace epochengine::platform
                     .hdc = hdc,
                     .payload = std::move(payload),
                     .desc = desc
+                });
+
+                const UINT dpi = GetDpiForWindow(hwnd);
+                queue(WindowEvent{
+                    .type = WindowEventType::dpi_changed,
+                    .context = context,
+                    .width = static_cast<std::int32_t>(dpi),
+                    .height = static_cast<std::int32_t>(dpi)
                 });
 
                 return make_handle(windows_.at(context));
