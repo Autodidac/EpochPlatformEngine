@@ -1,0 +1,70 @@
+name: apply-dpi-contract
+
+on:
+  push:
+    branches:
+      - fix/dpi-contract-v0.1.1
+    paths:
+      - '.github/workflows/patch-dpi-contract.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/dpi-contract-v0.1.1
+          fetch-depth: 0
+
+      - name: Apply DPI contract and version update
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+
+          cmake = root / 'CMakeLists.txt'
+          text = cmake.read_text()
+          text = text.replace('VERSION 0.1.0', 'VERSION 0.1.1', 1)
+          cmake.write_text(text)
+
+          (root / 'RELEASE_VERSION').write_text('0.1.1\n')
+
+          types = root / 'include/epochplatformengine/types.hpp'
+          text = types.read_text()
+          old = '''        std::int32_t width{};\n        std::int32_t height{};\n'''
+          new = '''        // For resized events these are client dimensions. For\n        // dpi_changed events they carry horizontal and vertical monitor DPI.\n        std::int32_t width{};\n        std::int32_t height{};\n'''
+          if old not in text:
+              raise SystemExit('WindowEvent size fields were not found')
+          types.write_text(text.replace(old, new, 1))
+
+          win32 = root / 'src/drivers/win32_driver.cpp'
+          text = win32.read_text()
+          old = '''                RECT rectangle{ 0, 0, desc.width, desc.height };\n                AdjustWindowRectExForDpi(&rectangle, style, FALSE, extended_style, 96);\n'''
+          new = '''                RECT rectangle{ 0, 0, desc.width, desc.height };\n                const UINT creation_dpi = GetDpiForSystem();\n                AdjustWindowRectExForDpi(\n                    &rectangle, style, FALSE, extended_style, creation_dpi);\n'''
+          if old not in text:
+              raise SystemExit('Initial window DPI block was not found')
+          text = text.replace(old, new, 1)
+
+          old = '''                windows_.emplace(context, WindowRecord{\n                    .hwnd = hwnd,\n                    .hdc = hdc,\n                    .payload = std::move(payload),\n                    .desc = desc\n                });\n\n                return make_handle(windows_.at(context));\n'''
+          new = '''                windows_.emplace(context, WindowRecord{\n                    .hwnd = hwnd,\n                    .hdc = hdc,\n                    .payload = std::move(payload),\n                    .desc = desc\n                });\n\n                const UINT dpi = GetDpiForWindow(hwnd);\n                queue(WindowEvent{\n                    .type = WindowEventType::dpi_changed,\n                    .context = context,\n                    .width = static_cast<std::int32_t>(dpi),\n                    .height = static_cast<std::int32_t>(dpi)\n                });\n\n                return make_handle(windows_.at(context));\n'''
+          if old not in text:
+              raise SystemExit('Window registration block was not found')
+          win32.write_text(text.replace(old, new, 1))
+
+          notes = root / 'docs/release-notes.md'
+          notes.write_text('''# EpochPlatformEngine v0.1.1\n\n## DPI contract\n\n- The Win32 driver now sizes the initial native window using the system DPI instead of a hard-coded 96 DPI.\n- Every new Win32 context emits an initial `dpi_changed` event before normal frame processing.\n- `dpi_changed` explicitly reports horizontal and vertical DPI in `WindowEvent::width` and `WindowEvent::height`.\n- Existing per-monitor `WM_DPICHANGED` handling and suggested-window repositioning remain intact.\n\nThis allows renderer and GUI libraries to resolve logical font sizes correctly on the first frame, including 125%, 150%, 175%, and 200% Windows scaling.\n''')
+
+          (root / '.github/workflows/patch-dpi-contract.yml').unlink()
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix initial per-monitor DPI contract"
+          git push origin HEAD:fix/dpi-contract-v0.1.1
