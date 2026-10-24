@@ -373,7 +373,9 @@ This is a simple guide to [MPL-2.0](LICENSE). The full license is the legal text
   this library. Using or linking to the library does not make your whole app
   open source.
 
-### Required when you give copies to people outside your organization
+### Rules For Distribution
+
+*Required when you give copies to people outside your organization, or publicly.*
 
 - [ ] Give those people access to this library's source code, including your
   changes. Tell them where and how to get the matching source without undue delay.
