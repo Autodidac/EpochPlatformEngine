@@ -362,47 +362,53 @@ entry choice, while the native EntrypointConsole/Windowed targets keep their API
 
 ## Commercial use and giving back
 
-Quick guide to [MPL-2.0](LICENSE); the full license governs. "Covered files"
-means this library's MPL source, your changes to it, and new files containing
-its code. Separate files in a larger application can use another license.
+This is a simple guide to [MPL-2.0](LICENSE). The full license is the legal text.
 
 ### Allowed
 
-- [x] Use the library commercially, including in proprietary applications.
-- [x] Sell applications or redistribute the library itself, changed or unchanged.
-- [x] Make private/internal changes without publishing them or sending a PR.
-- [x] License your separate application files under your own terms while meeting
-  MPL obligations for the covered files.
+- [x] Use, change and sell this library, by itself or inside your app.
+- [x] Keep changes to this library private while the software stays with you
+  or inside your organization. Giving copies to others triggers the rules below.
+- [x] Keep your own app's code private if it does not contain code copied from
+  this library. Using or linking to the library does not make your whole app
+  open source.
 
-### Required when distributing outside your organization
+### Required when you give copies to people outside your organization
 
-- [ ] Keep covered source, including your modifications, available under MPL-2.0.
-- [ ] When shipping binaries, tell recipients how to obtain that covered source
-  reasonably and promptly, charging no more than its distribution cost.
-- [ ] Tell recipients the source is MPL-2.0 and include the license or explain
-  how to obtain it.
-- [ ] Preserve required copyright, patent, license and warranty/liability notices.
-- [ ] Keep recipients' MPL source rights intact under any additional terms.
+- [ ] Give those people access to this library's source code, including your
+  changes. Tell them where and how to get the matching source without undue delay.
+- [ ] If you copied this library's code into another source file, make that whole
+  file available too. You do not have to share your other, separate app files.
+- [ ] Keep those shared library files under MPL-2.0. Include the license, or tell
+  people how to get it.
+- [ ] Keep the existing copyright, patent, license and warranty notices in the
+  source. Correcting a notice that is factually wrong is allowed.
+- [ ] Let recipients use, change and share those library files under MPL-2.0.
+  Your app's terms must not take those rights away.
+- [ ] If you charge for providing the source, charge no more than it costs you
+  to provide it. This does not limit what you charge for your app.
+
+You do not have to send changes to us or post them for the whole world. The
+source-sharing duty is to the people who receive your copy of the software.
 
 ### Not allowed
 
-- [ ] Do not make distributed covered source proprietary-only or withhold the
-  covered source required for your binaries.
-- [ ] Do not remove substantive required notices or present someone else's work
-  as your own.
-- [ ] Do not assume MPL grants rights to project names/logos or imply official
-  endorsement. Use distinct product branding; see [TRADEMARKS.md](TRADEMARKS.md).
+- [ ] Do not give people the software while denying them the library source
+  they are entitled to under the rules above.
+- [ ] Do not erase the original authors' notices or pretend you wrote their code.
+- [ ] Do not assume MPL lets you use our names or logos as your own brand, or
+  claim we approved your product. See the separate [branding rules](TRADEMARKS.md).
 
 ### Recommended, entirely optional
 
-- [ ] Make the library's origin and [source repository](https://github.com/Autodidac/EpochPlatformEngine) easy for
-  other developers to find in dependency metadata, credits, notices or technical
-  documentation. No particular README or About-screen placement is requested.
-- [ ] If you credit comparable libraries or tools, include this library alongside
-  them instead of obscuring its role. A factual link to
-  [EpochEngine](https://github.com/Autodidac/EpochEngine) also helps support the work.
-- [ ] Explain your own additions accurately. A wrapper, new name or small feature
-  does not make the underlying library your original invention.
+- [ ] Make the original author and [source link](https://github.com/Autodidac/EpochPlatformEngine) easy for other
+  developers to find. Use your dependency list, credits, notices or technical docs;
+  no particular README or About-screen placement is requested.
+- [ ] If you list similar libraries or tools your project uses, list this one
+  alongside them. A link to [EpochEngine](https://github.com/Autodidac/EpochEngine)
+  also helps support the work.
+- [ ] Say what you added and what came from this library. A new name, wrapper or
+  small extra feature does not make the underlying library your invention.
 - [ ] Share useful fixes, features, tests and documentation through a
   [pull request](https://github.com/Autodidac/EpochPlatformEngine/pulls); accepted contributions receive author credit.
 - [ ] Follow [CONTRIBUTING.md](CONTRIBUTING.md) when choosing to contribute.
@@ -415,9 +421,9 @@ See [Mozilla's MPL FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/) for examples
 
 ## License
 
-First-party source uses **MPL-2.0**; LICENSE contains the unmodified full text.
-Private modification is allowed; distribution obligations apply to covered
-files under that license. Commercial use is allowed. Required notices and
-third-party licenses remain in force. Historical grants are not revoked.
-See NOTICE for origin, TRADEMARKS.md for separate branding rules, and
-CONTRIBUTING.md / CONTRIBUTOR_LICENSE.md for explicit contribution acceptance.
+This library's own code uses **MPL-2.0**. [LICENSE](LICENSE) contains the unchanged
+legal terms. Other authors' code keeps its own license, and earlier copies keep
+the rights already granted for them.
+
+See [NOTICE](NOTICE) for the original author/source, [TRADEMARKS.md](TRADEMARKS.md)
+for names and logos, and [CONTRIBUTING.md](CONTRIBUTING.md) for sending improvements.
