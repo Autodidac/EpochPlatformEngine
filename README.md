@@ -362,31 +362,50 @@ entry choice, while the native EntrypointConsole/Windowed targets keep their API
 
 ## Commercial use and giving back
 
-A larger combined work may use its own license, including a proprietary commercial license, provided the covered files remain under MPL-2.0 and its applicable obligations are met.
+Quick guide to [MPL-2.0](LICENSE); the full license governs. "Covered files"
+means this library's MPL source, your changes to it, and new files containing
+its code. Separate files in a larger application can use another license.
 
-Commercial use and standalone commercial redistribution are allowed by MPL-2.0;
-you do not have to combine EpochPlatformEngine with another product. When distributing
-covered source modifications, make the covered modified files available under
-MPL-2.0 and retain its required notices. Follow LICENSE for the precise source
-availability and executable distribution obligations. Private edits do not
-require publication.
+### Allowed
+
+- [x] Use the library commercially, including in proprietary applications.
+- [x] Sell applications or redistribute the library itself, changed or unchanged.
+- [x] Make private/internal changes without publishing them or sending a PR.
+- [x] License your separate application files under your own terms while meeting
+  MPL obligations for the covered files.
+
+### Required when distributing outside your organization
+
+- [ ] Keep covered source, including your modifications, available under MPL-2.0.
+- [ ] When shipping binaries, tell recipients how to obtain that covered source
+  reasonably and promptly, charging no more than its distribution cost.
+- [ ] Tell recipients the source is MPL-2.0 and include the license or explain
+  how to obtain it.
+- [ ] Preserve required copyright, patent, license and warranty/liability notices.
+- [ ] Keep recipients' MPL source rights intact under any additional terms.
+
+### Not allowed
+
+- [ ] Do not make distributed covered source proprietary-only or withhold the
+  covered source required for your binaries.
+- [ ] Do not remove substantive required notices or present someone else's work
+  as your own.
+- [ ] Do not assume MPL grants rights to project names/logos or imply official
+  endorsement. Use distinct product branding; see [TRADEMARKS.md](TRADEMARKS.md).
+
+### Recommended, entirely optional
+
+- [ ] Give visible credit and link to [this repository](https://github.com/Autodidac/EpochPlatformEngine) and
+  [EpochEngine](https://github.com/Autodidac/EpochEngine) in your About screen or README.
+- [ ] Share useful fixes, features, tests and documentation through a
+  [pull request](https://github.com/Autodidac/EpochPlatformEngine/pulls); accepted contributions receive author credit.
+- [ ] Follow [CONTRIBUTING.md](CONTRIBUTING.md) when choosing to contribute.
 
 **MPL does not require an upstream pull request. But it would be a lot cooler if
-you shared!** Your fixes, features, tests and documentation help everyone using
-these libraries and support continued work on EpochEngine.
+you shared!** Contributions help these libraries support themselves and continued
+work on EpochEngine. These recommendations add no copyright-license conditions.
 
-Please give visible, accurate credit in your application's About screen or its
-README, linking to [the canonical EpochPlatformEngine repository](https://github.com/Autodidac/EpochPlatformEngine)
-and [EpochEngine](https://github.com/Autodidac/EpochEngine), which this work
-supports. Please offer generally useful changes as upstream pull requests with
-clear author credit and provenance, following CONTRIBUTING.md. These are
-community requests, not additional copyright-license conditions.
-Accepted pull-request contributions retain author credit in GitHub history and in project acknowledgements where applicable.
-
-
-Keep derivative product branding distinct and do not imply ownership of another
-author's work or official endorsement. Factual origin, contributor credit and API
-compatibility references are welcome; see TRADEMARKS.md.
+See [Mozilla's MPL FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/) for examples.
 
 ## License
 
