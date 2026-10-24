@@ -21,6 +21,37 @@ option(EPOCH_PLATFORM_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 find_package(Threads REQUIRED)
 
+# A C++23 mode flag alone does not establish standard-library compatibility.
+# For example, Clang 18 + Ubuntu libstdc++ hides std::expected behind its
+# concepts feature test. Diagnose the actual compiler/library pair up front.
+function(epoch_platform_check_standard_library)
+    if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 23)
+        set(CMAKE_CXX_STANDARD 23)
+    endif()
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_REQUIRED_LIBRARIES Threads::Threads)
+    include(CheckCXXSourceCompiles)
+    check_cxx_source_compiles([=[
+        #include <expected>
+        #include <thread>
+        #include <stop_token>
+        int main() {
+            std::expected<int, int> result = 7;
+            result = std::unexpected(3);
+            std::jthread worker([](std::stop_token token) { (void)token; });
+            worker.request_stop();
+            return result.has_value() ? 1 : result.error() - 3;
+        }
+    ]=] EPOCH_PLATFORM_HAS_REQUIRED_STANDARD_LIBRARY)
+    if(NOT EPOCH_PLATFORM_HAS_REQUIRED_STANDARD_LIBRARY)
+        message(FATAL_ERROR
+            "EpochPlatformEngine requires C++23 std::expected and std::jthread. "
+            "Select a compatible compiler AND standard library; the Linux CI pair "
+            "is Clang 19 with libstdc++ 13 or newer. Do not override feature macros.")
+    endif()
+endfunction()
+epoch_platform_check_standard_library()
+
 set(EPOCH_PLATFORM_COMMON_SOURCES
     src/application.cpp
     src/runtime.cpp

@@ -54,11 +54,13 @@ jobs:
       - name: Install compiler and pinned CMake
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-18 clang-tools-18 ninja-build python3-venv libx11-dev
+          sudo apt-get install -y clang-19 clang-tools-19 g++-13 ninja-build python3-venv libx11-dev
+          clang++-19 --version
+          clang-scan-deps-19 --version
           python3 -m venv .ci-tools
           .ci-tools/bin/python -m pip install cmake==4.4.2
       - name: Configure
-        run: .ci-tools/bin/cmake -S . -B out -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_TESTING=ON -DEPOCH_PLATFORM_BUILD_STATIC=ON -DEPOCH_PLATFORM_BUILD_SHARED=ON -DEPOCH_PLATFORM_BUILD_MODULES=ON -DEPOCH_PLATFORM_BUILD_TESTS=ON -DEPOCH_PLATFORM_BUILD_EXAMPLES=OFF
+        run: .ci-tools/bin/cmake -S . -B out -G Ninja -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_CXX_COMPILER_CLANG_SCAN_DEPS=/usr/bin/clang-scan-deps-19 -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_TESTING=ON -DEPOCH_PLATFORM_BUILD_STATIC=ON -DEPOCH_PLATFORM_BUILD_SHARED=ON -DEPOCH_PLATFORM_BUILD_MODULES=ON -DEPOCH_PLATFORM_BUILD_TESTS=ON -DEPOCH_PLATFORM_BUILD_EXAMPLES=OFF
       - name: Build
         run: .ci-tools/bin/cmake --build out --parallel 2
       - name: Assert required module consumers were registered

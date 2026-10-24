@@ -237,6 +237,12 @@ The noninteractive validation examples and tests run automatically. The release 
 
 ### CMake
 
+The compiler and standard library must provide C++23 `std::expected` and
+`std::jthread`; configure checks both before building. Linux CI uses Clang 19
+with libstdc++ 13 or newer and its matching `clang-scan-deps`. Clang 18 with
+Ubuntu's default libstdc++ does not expose the required `std::expected` API.
+
+
 ```bash
 cmake --preset ninja-debug
 cmake --build --preset ninja-debug
