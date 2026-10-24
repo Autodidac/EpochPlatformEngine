@@ -369,7 +369,11 @@ you do not have to combine EpochPlatformEngine with another product. When distri
 covered source modifications, make the covered modified files available under
 MPL-2.0 and retain its required notices. Follow LICENSE for the precise source
 availability and executable distribution obligations. Private edits do not
-require publication, and MPL does not require an upstream pull request.
+require publication.
+
+**MPL does not require an upstream pull request. But it would be a lot cooler if
+you shared!** Your fixes, features, tests and documentation help everyone using
+these libraries and support continued work on EpochEngine.
 
 Please give visible, accurate credit in your application's About screen or its
 README, linking to [the canonical EpochPlatformEngine repository](https://github.com/Autodidac/EpochPlatformEngine)
