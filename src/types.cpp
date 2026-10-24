@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #include <epochplatformengine/types.hpp>
 
 #include <cstdlib>
@@ -54,6 +55,9 @@ namespace epochengine::platform
         case RuntimePlatform::Windows: return "windows";
         case RuntimePlatform::Linux: return "linux";
         case RuntimePlatform::MacOS: return "macos";
+        case RuntimePlatform::Android: return "android";
+        case RuntimePlatform::IOS: return "ios";
+        case RuntimePlatform::Web: return "web";
         default: return "unknown";
         }
     }

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #if defined(__linux__) && defined(EPOCH_PLATFORM_HAS_X11)
 
 #include <epochplatformengine/driver.hpp>

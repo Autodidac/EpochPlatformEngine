@@ -18,3 +18,7 @@
 *.dylib
 *.exe
 compile_commands.json
+
+/.ci-tools/
+
+/source-audit.json

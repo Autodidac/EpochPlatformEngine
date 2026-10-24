@@ -1,5 +1,9 @@
 # EpochPlatformEngine
 
+Current source version: **0.2.0**. Release artifacts and native acceptance are separate gates.
+
+MPL-2.0 permits commercial use, including proprietary larger works subject to its covered-file obligations. See [Commercial use and giving back](#commercial-use-and-giving-back) for licensing, origin links and voluntary credit requests.
+
 `EpochPlatformEngine` is the reusable C++23 process, window, event, and multi-context host for EpochEngine applications and standalone tools.
 
 It deliberately does **not** own rendering. OpenGL, Vulkan, DirectX, SDL, SFML, Raylib, software rendering, and future renderer implementations remain in their own EpochEngine drivers. `EpochPlatformEngine` owns the native operating-system boundary those drivers attach to.
@@ -327,6 +331,58 @@ The migration boundary is documented in [`docs/epochengine-integration.md`](docs
 - `NativeWindowHandle` replaces platform handles embedded directly in shared engine state.
 - No global `WindowData::s_instance` is required.
 
+## Canonical native API and module adapters
+
+The native header API and `platform.native` share the same global declarations;
+`RuntimePlatform` retains its uint8 representation and Unknown/Windows/Linux/MacOS
+values 0/1/2/3. Android, IOS and Web identifiers append values without claiming
+native driver implementations. Existing Static/Shared libraries and native
+application entrypoints remain available.
+
+`EpochPlatformEngine::ModuleStatic` and `::ModuleShared` also own the accepted
+portable core, capability, tier and software-application modules. `platform.engine`
+reexports the native API and keeps distribution/archive/topology policy under
+`epochengine::platform::policy`. The previous software window session and native
+attachment/input helpers live under `epochengine::platform::window_adapter`, so
+they cannot redefine the published native WindowDesc, WindowEvent or policy types.
+The two ContextType domains remain distinct and retain their numeric values.
+
+Consumers choose a native application runtime or their existing Engine host.
+Importing/linking these modules starts no second Runtime, registry, event pump or
+scheduler. Direct adoption of canonical drivers by the existing Engine manager
+remains a separate integration gate; this graph does not claim that migration is
+complete. The explicit `Epoch::PlatformEntry` is the existing software-session
+entry choice, while the native EntrypointConsole/Windowed targets keep their API.
+
+## Commercial use and giving back
+
+A larger combined work may use its own license, including a proprietary commercial license, provided the covered files remain under MPL-2.0 and its applicable obligations are met.
+
+Commercial use and standalone commercial redistribution are allowed by MPL-2.0;
+you do not have to combine EpochPlatformEngine with another product. When distributing
+covered source modifications, make the covered modified files available under
+MPL-2.0 and retain its required notices. Follow LICENSE for the precise source
+availability and executable distribution obligations. Private edits do not
+require publication, and MPL does not require an upstream pull request.
+
+Please give visible, accurate credit in your application's About screen or its
+README, linking to [the canonical EpochPlatformEngine repository](https://github.com/Autodidac/EpochPlatformEngine)
+and [EpochEngine](https://github.com/Autodidac/EpochEngine), which this work
+supports. Please offer generally useful changes as upstream pull requests with
+clear author credit and provenance, following CONTRIBUTING.md. These are
+community requests, not additional copyright-license conditions.
+Accepted pull-request contributions retain author credit in GitHub history and in project acknowledgements where applicable.
+
+
+Keep derivative product branding distinct and do not imply ownership of another
+author's work or official endorsement. Factual origin, contributor credit and API
+compatibility references are welcome; see TRADEMARKS.md.
+
 ## License
 
-`LicenseRef-MIT-NoSell`. Commercial use requires prior written permission from the copyright holder. See [`LICENSE`](LICENSE).
+First-party source uses **MPL-2.0**; LICENSE contains the unmodified full text.
+Private modification is allowed; distribution obligations apply to covered
+files under that license. Commercial use is allowed. Required notices and
+third-party licenses remain in force. Historical grants are not revoked.
+See NOTICE for origin, TRADEMARKS.md for separate branding rules, and
+CONTRIBUTING.md / CONTRIBUTOR_LICENSE.md for explicit contribution acceptance.

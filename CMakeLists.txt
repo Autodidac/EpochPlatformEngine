@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(EpochPlatformEngine
-    VERSION 0.1.1
+    VERSION 0.2.0
     DESCRIPTION "Cross-platform C++23 multi-context platform runtime"
     LANGUAGES CXX)
 
@@ -144,6 +144,55 @@ if(WIN32)
     endif()
 endif()
 
+# A named-module consumer uses the same canonical header declarations and native
+# implementation as existing callers. Each linkage gets its correct ABI macros.
+option(EPOCH_PLATFORM_BUILD_MODULES "Build C++23 named module API" ON)
+if(EPOCH_PLATFORM_BUILD_MODULES)
+    foreach(linkage IN ITEMS Static Shared)
+        if(TARGET EpochPlatformEngine${linkage})
+            add_library(EpochPlatformModule${linkage} STATIC)
+            target_compile_features(EpochPlatformModule${linkage} PUBLIC cxx_std_23)
+            set_target_properties(EpochPlatformModule${linkage} PROPERTIES CXX_SCAN_FOR_MODULES ON EXPORT_NAME Module${linkage})
+            target_sources(EpochPlatformModule${linkage} PUBLIC
+                FILE_SET CXX_MODULES FILES modules/platform.native.ixx)
+            target_sources(EpochPlatformModule${linkage} PUBLIC
+                FILE_SET adapter_modules TYPE CXX_MODULES FILES
+                    modules/context.admission.ixx
+                    modules/context.type.ixx
+                    modules/core.env.ixx
+                    modules/core.error.ixx
+                    modules/core.log.ixx
+                    modules/core.time.ixx
+                    modules/perf.select.ixx
+                    modules/perf.tier.ixx
+                    modules/platform.application.ixx
+                    modules/platform.budgets.ixx
+                    modules/platform.capabilities.ixx
+                    modules/platform.engine.ixx
+                    modules/platform.window.ixx
+                    modules/platform.window_attachment.ixx)
+            target_sources(EpochPlatformModule${linkage} PRIVATE
+                    src/core/core.env.cpp
+                    src/core/core.log.cpp
+                    src/core/core.time.cpp
+                    src/epoch/epoch.software_application.cpp
+                    src/platform/platform.window.cpp
+                    src/platform/platform.window_attachment.cpp)
+            if(WIN32)
+                target_link_libraries(EpochPlatformModule${linkage} PUBLIC comctl32)
+            endif()
+            target_link_libraries(EpochPlatformModule${linkage} PUBLIC EpochPlatformEngine${linkage})
+            add_library(EpochPlatformEngine::Module${linkage} ALIAS EpochPlatformModule${linkage})
+            if(BUILD_TESTING AND EPOCH_PLATFORM_BUILD_TESTS)
+                add_executable(EpochPlatformModuleContract${linkage} tests/platform.module_contract.cpp)
+                set_target_properties(EpochPlatformModuleContract${linkage} PROPERTIES CXX_SCAN_FOR_MODULES ON)
+                target_link_libraries(EpochPlatformModuleContract${linkage} PRIVATE EpochPlatformModule${linkage})
+                add_test(NAME EpochPlatformModuleContract${linkage} COMMAND EpochPlatformModuleContract${linkage})
+            endif()
+        endif()
+    endforeach()
+endif()
+
 include(cmake/EpochPlatformApplication.cmake)
 
 if(EPOCH_PLATFORM_BUILD_EXAMPLES)
@@ -187,6 +236,7 @@ endif()
 set(EPOCH_PLATFORM_INSTALL_TARGETS)
 foreach(target IN ITEMS
     EpochPlatformEngineStatic EpochPlatformEngineShared
+    EpochPlatformModuleStatic EpochPlatformModuleShared
     EpochPlatformEntrypointConsoleStatic EpochPlatformEntrypointConsoleShared
     EpochPlatformEntrypointWindowedStatic EpochPlatformEntrypointWindowedShared)
     if(TARGET ${target})
@@ -198,7 +248,9 @@ install(TARGETS ${EPOCH_PLATFORM_INSTALL_TARGETS}
     EXPORT EpochPlatformEngineTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_DATADIR}/EpochPlatformEngine/modules
+    FILE_SET adapter_modules DESTINATION ${CMAKE_INSTALL_DATADIR}/EpochPlatformEngine/modules)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES cmake/EpochPlatformApplication.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/EpochPlatformEngine)
 install(EXPORT EpochPlatformEngineTargets
@@ -223,3 +275,39 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/EpochPlatformEngineConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/EpochPlatformEngineConfigVersion.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/EpochPlatformEngine)
+
+# Compatibility target names identify the maintained static module owner.
+if(TARGET EpochPlatformModuleStatic)
+    add_library(Epoch::PlatformEngine ALIAS EpochPlatformModuleStatic)
+    if(BUILD_TESTING AND EPOCH_PLATFORM_BUILD_TESTS)
+        foreach(contract IN ITEMS policy tier native_input)
+            if(contract STREQUAL "tier")
+                set(_source tests/perf.tier_contract.cpp)
+            else()
+                set(_source tests/platform.${contract}_contract.cpp)
+            endif()
+            add_executable(epoch_platform_${contract}_contract ${_source})
+            set_target_properties(epoch_platform_${contract}_contract PROPERTIES CXX_SCAN_FOR_MODULES ON)
+            target_link_libraries(epoch_platform_${contract}_contract PRIVATE Epoch::PlatformEngine)
+            add_test(NAME epoch_platform_${contract}_contract COMMAND epoch_platform_${contract}_contract)
+        endforeach()
+    endif()
+endif()
+
+# The software-session adapter keeps its explicit entry choice; it never starts
+# the canonical Runtime alongside an existing Engine manager.
+if(TARGET EpochPlatformModuleStatic AND CMAKE_SYSTEM_NAME MATCHES "^(Windows|Linux|Darwin)$" AND NOT ANDROID AND NOT EMSCRIPTEN)
+    add_library(epoch_platform_entry OBJECT EXCLUDE_FROM_ALL src/platform/platform.entry.cpp)
+    add_library(Epoch::PlatformEntry ALIAS epoch_platform_entry)
+    set_target_properties(epoch_platform_entry PROPERTIES CXX_SCAN_FOR_MODULES ON)
+    target_link_libraries(epoch_platform_entry PUBLIC Epoch::PlatformEngine)
+    if(WIN32)
+        target_link_libraries(epoch_platform_entry PUBLIC shell32)
+    endif()
+    if(BUILD_TESTING AND EPOCH_PLATFORM_BUILD_TESTS)
+        add_executable(epoch_platform_entry_contract tests/platform.entry_contract.cpp)
+        set_target_properties(epoch_platform_entry_contract PROPERTIES CXX_SCAN_FOR_MODULES ON)
+        target_link_libraries(epoch_platform_entry_contract PRIVATE Epoch::PlatformEntry)
+        add_test(NAME epoch_platform_entry_contract COMMAND epoch_platform_entry_contract --contract)
+    endif()
+endif()

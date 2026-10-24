@@ -1,14 +1,13 @@
 name: EpochPlatformEngine Release
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - "v*"
-    paths:
-      - "RELEASE_VERSION"
   workflow_dispatch:
+    inputs:
+      release_authorized:
+        description: Publish a new accepted version tag after source, CI and native acceptance
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: write
@@ -19,8 +18,9 @@ concurrency:
 
 jobs:
   linux-x64:
+    if: inputs.release_authorized && startsWith(github.ref, 'refs/tags/v')
     name: Linux x64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -91,6 +91,7 @@ jobs:
           if-no-files-found: error
 
   windows-x64:
+    if: inputs.release_authorized && startsWith(github.ref, 'refs/tags/v')
     name: Windows x64
     runs-on: windows-latest
 
@@ -167,8 +168,9 @@ jobs:
           if-no-files-found: error
 
   publish:
+    if: inputs.release_authorized && startsWith(github.ref, 'refs/tags/v')
     name: Publish GitHub release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - linux-x64
       - windows-x64
@@ -195,39 +197,62 @@ jobs:
         id: version
         shell: bash
         run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            tag="${GITHUB_REF_NAME}"
-          else
-            tag="v$(tr -d '\r\n ' < RELEASE_VERSION)"
+          set -euo pipefail
+          version="$(tr -d '\r\n ' < RELEASE_VERSION)"
+          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "RELEASE_VERSION must contain three numeric components." >&2
+            exit 1
+          fi
+          tag="v${version}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" != "${tag}" ]]; then
+            echo "The pushed tag does not match RELEASE_VERSION." >&2
+            exit 1
           fi
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
 
-      - name: Update release tag
-        env:
-          RELEASE_TAG: ${{ steps.version.outputs.tag }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag --force "${RELEASE_TAG}" "${GITHUB_SHA}"
-          git push origin "refs/tags/${RELEASE_TAG}" --force
-
-      - name: Publish assets
+      - name: Publish immutable release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
-          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            gh release edit "${RELEASE_TAG}" \
-              --title "EpochPlatformEngine ${RELEASE_TAG}" \
-              --notes-file docs/release-notes.md
-          else
-            gh release create "${RELEASE_TAG}" \
-              --target "${GITHUB_SHA}" \
-              --title "EpochPlatformEngine ${RELEASE_TAG}" \
-              --notes-file docs/release-notes.md
+          # Only an explicit 404 proves absence. Authentication/network errors
+          # must not be interpreted as permission to replace a release.
+          if release_response="$(gh api --include "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" 2>/dev/null)"; then
+            echo "Release ${RELEASE_TAG} already exists; published bytes are immutable." >&2
+            exit 1
           fi
-          gh release upload "${RELEASE_TAG}" dist/* --clobber
+          if ! grep -Eq '^HTTP/[0-9.]+[[:space:]]+404([[:space:]]|$)' <<< "${release_response}"; then
+            echo "Could not verify that the release is absent; publication refused." >&2
+            exit 1
+          fi
+
+          target="$(git rev-parse "${GITHUB_SHA}^{commit}")"
+          remote_tag="$(git ls-remote --tags origin "refs/tags/${RELEASE_TAG}" "refs/tags/${RELEASE_TAG}^{}")"
+          if [[ -n "${remote_tag}" ]]; then
+            git fetch --no-tags origin "refs/tags/${RELEASE_TAG}"
+            if [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" != "${target}" ]]; then
+              echo "The existing tag points to another commit; publication refused." >&2
+              exit 1
+            fi
+          else
+            if git show-ref --verify --quiet "refs/tags/${RELEASE_TAG}"; then
+              if [[ "$(git rev-parse "${RELEASE_TAG}^{commit}")" != "${target}" ]]; then
+                echo "The local tag points to another commit; publication refused." >&2
+                exit 1
+              fi
+            else
+              git tag "${RELEASE_TAG}" "${target}"
+            fi
+            # A concurrent tag creation fails rather than moving that tag.
+            git push origin "refs/tags/${RELEASE_TAG}"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Creation and initial assets are one command. Never edit an existing
+          # release or upload replacement assets, including on a failed rerun.
+          gh release create "${RELEASE_TAG}" dist/* --verify-tag \
+            --target "${target}" \
+            --title "EpochPlatformEngine ${RELEASE_TAG}" \
+            --notes-file docs/release-notes.md

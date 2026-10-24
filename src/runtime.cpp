@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #include "runtime_internal.hpp"
 
 #include <algorithm>

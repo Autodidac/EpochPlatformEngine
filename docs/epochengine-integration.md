@@ -58,3 +58,27 @@ This preserves the engine's multi-context diagnostic grids and detached editor p
 6. Remove native handles and static global window state from the old platform layer only after parity tests pass.
 
 The old and new paths can coexist during migration because renderer code receives opaque native handles rather than depending on the platform implementation type.
+
+## Canonical module reconciliation (local validation)
+
+`platform.native` re-exports the existing public header declarations and links
+exactly the existing native implementation. CMake targets
+`EpochPlatformEngine::ModuleStatic` and `ModuleShared` select the respective
+static/shared ABI. Header users and existing entrypoint archives remain supported.
+The module CPU consumers exercise the actual headless driver without starting a
+second Runtime scheduler. Native desktop behavior is not established by this test.
+
+The Engine extraction is not a replacement for this repository. Before importing
+both APIs into Engine, move its distribution/archive/topology policy into its
+existing `epochengine::platform::policy` adapter namespace. The canonical public
+`RuntimePlatform` remains `uint8_t` with Unknown=0, Windows=1, Linux=2, MacOS=3.
+The Engine extraction previously used different values and size: that adaptation
+requires recompiling consumers and must not reinterpret persisted ordinals. Its
+`epochengine::core::ContextType` is a separate API and must remain unchanged.
+
+The current Engine registry and per-context render threads remain the owners.
+Native reuse should start at `IPlatformDriver`, not by starting this repository's
+`Runtime::DriverHost` beside Engine's multiplexer. Existing-window admission and
+scoped pumping need explicit contracts before adopting SDL/SFML/Raylib surfaces.
+The present Win32 driver pumps the current thread queue and owns created windows;
+it is not yet a safe non-owning adapter for those existing surfaces.

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #include <epochplatformengine/epoch_platform_engine.hpp>
 
 #include <atomic>

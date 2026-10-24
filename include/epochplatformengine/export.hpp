@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #pragma once
 
 #if defined(EPOCH_PLATFORM_ENGINE_STATIC)

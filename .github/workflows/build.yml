@@ -1,0 +1,77 @@
+name: Canonical native and module source contracts
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pinned CMake
+        shell: pwsh
+        run: |
+          python -m venv .ci-tools
+          .ci-tools/Scripts/python -m pip install cmake==4.4.2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Configure
+        run: .ci-tools/Scripts/cmake -S . -B out -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DEPOCH_PLATFORM_BUILD_STATIC=ON -DEPOCH_PLATFORM_BUILD_SHARED=ON -DEPOCH_PLATFORM_BUILD_MODULES=ON -DEPOCH_PLATFORM_BUILD_TESTS=ON -DEPOCH_PLATFORM_BUILD_EXAMPLES=OFF -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded
+      - name: Build
+        run: .ci-tools/Scripts/cmake --build out --config ${{ matrix.config }} --parallel 2
+      - name: Assert required module consumers were registered
+        run: python .github/check_module_tests.py out
+      - name: CPU contracts
+        run: .ci-tools/Scripts/ctest --test-dir out -C ${{ matrix.config }} --output-on-failure
+      - name: Source and license receipt
+        run: python .github/audit_source.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-${{ matrix.config }}-evidence
+          path: |
+            source-audit.json
+            out/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+  linux:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install compiler and pinned CMake
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 clang-tools-18 ninja-build python3-venv libx11-dev
+          python3 -m venv .ci-tools
+          .ci-tools/bin/python -m pip install cmake==4.4.2
+      - name: Configure
+        run: .ci-tools/bin/cmake -S . -B out -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_TESTING=ON -DEPOCH_PLATFORM_BUILD_STATIC=ON -DEPOCH_PLATFORM_BUILD_SHARED=ON -DEPOCH_PLATFORM_BUILD_MODULES=ON -DEPOCH_PLATFORM_BUILD_TESTS=ON -DEPOCH_PLATFORM_BUILD_EXAMPLES=OFF
+      - name: Build
+        run: .ci-tools/bin/cmake --build out --parallel 2
+      - name: Assert required module consumers were registered
+        run: python3 .github/check_module_tests.py out
+      - name: CPU contracts
+        run: .ci-tools/bin/ctest --test-dir out --output-on-failure
+      - name: Source and license receipt
+        run: python3 .github/audit_source.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-${{ matrix.config }}-evidence
+          path: |
+            source-audit.json
+            out/Testing/Temporary/LastTest.log
+          if-no-files-found: warn

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #if defined(_WIN32)
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -393,7 +394,8 @@ namespace epochengine::platform
                         .key = static_cast<std::int32_t>(wparam),
                         .repeated = (lparam & (1LL << 30)) != 0
                     });
-                    return 0;
+                    // Observation does not consume native system commands (for example Alt-F4).
+                    return message == WM_SYSKEYDOWN ? DefWindowProcW(hwnd, message, wparam, lparam) : 0;
                 case WM_KEYUP:
                 case WM_SYSKEYUP:
                     owner.queue(WindowEvent{
@@ -401,7 +403,7 @@ namespace epochengine::platform
                         .context = context,
                         .key = static_cast<std::int32_t>(wparam)
                     });
-                    return 0;
+                    return message == WM_SYSKEYUP ? DefWindowProcW(hwnd, message, wparam, lparam) : 0;
                 case WM_CHAR:
                     owner.queue(WindowEvent{
                         .type = WindowEventType::text_input,

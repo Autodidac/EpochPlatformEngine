@@ -1,4 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
 #pragma once
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
 
 #include "export.hpp"
 
@@ -54,7 +58,10 @@ namespace epochengine::platform
         Unknown = 0,
         Windows,
         Linux,
-        MacOS
+        MacOS,
+        Android,
+        IOS,
+        Web
     };
 
     enum class DriverKind : std::uint8_t
@@ -207,7 +214,13 @@ namespace epochengine::platform
 
     [[nodiscard]] constexpr RuntimePlatform current_platform() noexcept
     {
-#if defined(_WIN32)
+#if defined(__EMSCRIPTEN__)
+        return RuntimePlatform::Web;
+#elif defined(__ANDROID__)
+        return RuntimePlatform::Android;
+#elif defined(__APPLE__) && TARGET_OS_IPHONE
+        return RuntimePlatform::IOS;
+#elif defined(_WIN32)
         return RuntimePlatform::Windows;
 #elif defined(__APPLE__)
         return RuntimePlatform::MacOS;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 #include <epochplatformengine/application.hpp>
 
 #if defined(_WIN32) && defined(EPOCH_PLATFORM_WINDOWED_ENTRYPOINT)
