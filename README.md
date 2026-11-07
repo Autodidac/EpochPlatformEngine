@@ -1,6 +1,6 @@
 # EpochPlatformEngine
 
-Current source version: **0.2.1**. Release artifacts and native acceptance are separate gates.
+Current source candidate: **0.2.2**, prepared locally and unpublished. Release artifacts and native acceptance are separate gates. See [release notes](docs/release-notes.md).
 
 MPL-2.0 permits commercial use, including proprietary larger works subject to its covered-file obligations. See [Commercial use and giving back](#commercial-use-and-giving-back) for licensing, origin links and voluntary credit requests.
 

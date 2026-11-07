@@ -1,4 +1,20 @@
-# EpochPlatformEngine v0.1.1
+# EpochPlatformEngine release notes
+
+## 0.2.2 — local unpublished candidate
+
+- Default unselected frame pacing to 30 Hz; retain explicit finite rates, VSync
+  and uncapped selection. Each limiter turn offers at most one cooperative yield.
+- Record precise attachment refusal stages and native errors. Skip already-correct
+  native attribute writes; reconcile error 87 only for verified changed style
+  postconditions, preserving identity/readback checks and other refusals.
+- Apply sibling/descendant clipping to admitted child attachments and restore
+  their exact original styles on retirement.
+
+Standalone Debug/Release static/shared/module builds and CPU contracts pass.
+Native attachment, desktop responsiveness and exact-package acceptance remain
+separate; no release or runtime success is claimed from these checks.
+
+## 0.1.1
 
 ## DPI contract
 
