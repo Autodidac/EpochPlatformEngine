@@ -1,6 +1,8 @@
 # EpochPlatformEngine
 
-Current source candidate: **0.2.2**, prepared locally and unpublished. Release artifacts and native acceptance are separate gates. See [release notes](docs/release-notes.md).
+[EpochPlatformEngine 0.2.2](https://github.com/Autodidac/EpochPlatformEngine/releases/tag/v0.2.2)
+is published with Windows and Linux x64 SDK packages and checksums. See
+[release notes](docs/release-notes.md) for the scope of native acceptance.
 
 MPL-2.0 permits commercial use, including proprietary larger works subject to its covered-file obligations. See [Commercial use and giving back](#commercial-use-and-giving-back) for licensing, origin links and voluntary credit requests.
 
